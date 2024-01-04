@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +16,7 @@ import (
 var ID int
 
 func SetapDasRotasDeTeste() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode) //Exibe a resposta de test com uma forma simplificada
 	rotas := gin.Default()
 	return rotas
 }
@@ -59,6 +59,18 @@ func TestExibeAlunos(t *testing.T) {
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
 	assert.Equal(t, http.StatusOK, resposta.Code)
+}
 
-	fmt.Println(resposta.Body)
+func TestBuscaAlunoPorCPF(t *testing.T) {
+	database.ConectaComBancoDeDados()
+	CriaAlunoMock()
+	defer DeletaAlunoMock()
+
+	r := SetapDasRotasDeTeste()
+	r.GET("/alunos/cpf/:cpf", controllers.BuscaAlunoPorCPF)
+
+	req, _ := http.NewRequest("GET", "/alunos/cpf/89609458755", nil)
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+	assert.Equal(t, http.StatusOK, resposta.Code)
 }
